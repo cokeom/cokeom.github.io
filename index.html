@@ -167,18 +167,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -203,6 +203,178 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://cokeom.github.io/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E6%9F%AF%E5%9F%BA.jpg">
+      <meta itemprop="name" content="Coke">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coke's love">
+      <meta itemprop="description" content="Personal Blog">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Coke's love">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/" class="post-title-link" itemprop="url">TVM加入新后端的方式1——BYOC</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-04-12 20:30:00 / 修改时间：20:30:32" itemprop="dateCreated datePublished" datetime="2023-04-12T20:30:00+08:00">2023-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TVM/" itemprop="url" rel="index"><span itemprop="name">TVM</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/TVM/TVM%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">TVM官方文档解析</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>13k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>23 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="BYOC"><a href="#BYOC" class="headerlink" title="BYOC"></a>BYOC</h2><p>BYOC的全称是Bring You Own Codegen，也就是自定义代码生成。BYOC的输入为Relay图，也就是输入框架经过翻译后成为高层的语言。而输出取决与硬件方提供的编译器环境，可以是c语言、CUDA、JSON等。但是通过阅读官方文档可以发现，并没有生成LLVM IR的说法，因此通过BYOC生成LLVM IR有待商榷。</p>
+<p>下面通过TVM官方的How to Bring Your Own Codegen的例子，来说明BYOC的pipeline。</p>
+<h3 id="BYOC工作流程"><a href="#BYOC工作流程" class="headerlink" title="BYOC工作流程"></a>BYOC工作流程</h3><img src="/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/image-20230410214702547.png" alt="image-20230410214702547" style="zoom: 50%;">
+
+<p>上图是给定的一个Relay图，下面是BYOC框架的执行流程：</p>
+<ol>
+<li><p>图注解<br>在获得用户提供的Relay图后，TVM第一步是对图中可能offloaded到加速器的节点进行注解。需要遵循一定的规则去实现一份支持算子的白名单，或者一个自定义的符合算子的图匹配列表。经过图注解，形成的计算图如下：</p>
+<img src="/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/image-20230410214748530.png" alt="image-20230410214748530" style="zoom: 67%;"></li>
+<li><p>图转换(Transformation)<br>TVM第二步是在注解图上进行转换和优化。与普通的转换不同，BYOC执行的转换如下：</p>
+<ul>
+<li>合并编译区域：在图2中通过黑色框可见有许多编译区在图上，需要被加载到加速器上。实际上它们可以被合并，从而减少数据传输以及内核启动开销。在这一步中使用了贪心算法，让尽可能多的区域合并，同时保证功能正确，结果如图3所示。<img src="/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/image-20230410214802068.png" alt="image-20230410214802068" style="zoom:67%;"></li>
+<li>划分图：对于上一步得到的每一个区域，TVM生成一个带编译器属性的Relay函数，用来表明该Relay函数需要完全卸载到加速器上，结果如图4所示：<br><img src="/2023/04/12/TVM_BYOC%E6%A1%86%E6%9E%B6/image-20230410214810390.png" alt="image-20230410214810390"></li>
+</ul>
+</li>
+<li><p>代码生成<br>到目前为止TVM已经知道了Relay图那一部分应该被卸载到硬件上。在这一步中，TVM将一次将每个带有<code>your_accelerator</code>Relay 函数发送到你的代码生成模块。自定义代码生成模块需要编译Relay函数为符合你自己编译流的执行格式，这可以是C源码或者其他文本格式。<br>最后，所有需要被编译的函数和其他没有被卸载的Relay函数都一起由外部PythonAPI序列化为一个<code>.so</code>文件。用户在这一阶段只能获得一个<code>.so</code>文件。</p>
+</li>
+<li><p>运行时<br>开发者还可能需要实现一个运行时来初始化自己的图引擎并且执行编译的函数。在推断期间，当TVM运行时遇到相应的功能调用时，TVM运行时会利用自定义的运行时来调用卸载功能。Your runtime is responsible for launching the compiled function with the given input tensor arrays and filling in the results to the output tensor arrays.</p>
+</li>
+</ol>
+<h3 id="示例代码-Bring-DNNL-to-TVM"><a href="#示例代码-Bring-DNNL-to-TVM" class="headerlink" title="示例代码:Bring DNNL to TVM"></a>示例代码:Bring DNNL to TVM</h3><p>DNNL(Deep Neural Network Library)使用C++实现的一些深度学习库。</p>
+<h4 id="创建注解规则"><a href="#创建注解规则" class="headerlink" title="创建注解规则"></a>创建注解规则</h4><p>BYOC框架提供了两种方式去描述支持的算子和模式(patterns)。开发者可以同时使用它们。完整的实现可以从<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/python/tvm/relay/op/contrib/dnnl.py">这里</a>找到。注意TVM需要你把你自己的代码生成注解规则放在<code>python/tvm/relay/op/contrib/your_codegen_name.py</code>。</p>
+<p><strong>单个算子的注解规则</strong></p>
+<p>开发者可以通过BYOC API直观的指定加速器中支持那些Relay算子。例如，下列代码块构建了一个规则：自定义的DNNL代码生成支持Conv2D。这个注解给Relay <code>nn.conv2d</code>算子注册了一个<code>target.dnn1</code>的新属性。通过这个方式，BYOC可以通过为每个算子调用<code>target.dnn1()</code>从而检查算子是否在DNNL代码生成中支持。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@tvm.ir.register_op_attr(<span class="params"><span class="string">&quot;nn.conv2d&quot;</span>, <span class="string">&quot;target.dnn1&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_dnn1_conv2d_wrapper</span>(<span class="params">attrs, args</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<p>不过为每个算子都写上述代码可能很乏味。对于DNNL实现，可以使用一个helper函数<code>_register_external_op_helper</code>，从而简化操作。如下面代码所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_register_external_op_helper</span>(<span class="params">op_name, supported=<span class="literal">True</span></span>):</span><br><span class="line"><span class="meta">    @tvm.ir.register_op_attr(<span class="params">op_name, <span class="string">&quot;target.dnn1&quot;</span></span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_func_wrapper</span>(<span class="params">attrs, args</span>):</span><br><span class="line">        <span class="keyword">return</span> supported</span><br><span class="line">    retrun _func_wrapper</span><br><span class="line">    </span><br><span class="line"><span class="comment"># DNNL支持的算子</span></span><br><span class="line">_register_external_op_helper(<span class="string">&quot;nn.batch_norm&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;nn.conv2d&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;nn.dense&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;nn.relu&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;add&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;subtract&quot;</span>)</span><br><span class="line">_register_external_op_helper(<span class="string">&quot;multiply&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>图模式的注解规则</strong></p>
+<p>开发者的加速器或者编译器可能已经优化了一些模式(比如Conv2D+add+ReLU)为单个指令或者单个API。因此，开发者需要指明从一个计算图模式到自己的指令或者API的映射关系。</p>
+<p>对于DNNL例子，它的Conv2D API已经包含了偏置add并且也允许后面的ReLU一起执行。因此我们调用下面的代码使用DNNL(完整的在<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/main/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151]">这里</a>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">DNNLConv2d</span>(<span class="type">const</span> <span class="type">bool</span> has_bias = <span class="literal">false</span>, <span class="type">const</span> <span class="type">bool</span> has_relu = <span class="literal">false</span>) &#123;</span><br><span class="line">  <span class="comment">// ... skip ...</span></span><br><span class="line">  <span class="keyword">auto</span> conv_desc = dnnl::convolution_forward::<span class="built_in">desc</span>(</span><br><span class="line">    dnnl::prop_kind::forward_inference,</span><br><span class="line">    dnnl::algorithm::convolution_direct,</span><br><span class="line">    conv_src_md, conv_weights_md, conv_bias_md, conv_dst_md,</span><br><span class="line">    strides_dims, padding_dims_l, padding_dims_r);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Attach ReLU</span></span><br><span class="line">  dnnl::primitive_attr attr;</span><br><span class="line">  <span class="keyword">if</span> (has_relu) &#123;</span><br><span class="line">    dnnl::post_ops ops;</span><br><span class="line">    ops.<span class="built_in">append_eltwise</span>(<span class="number">1.f</span>, dnnl::algorithm::eltwise_relu, <span class="number">0.f</span>, <span class="number">0.f</span>);</span><br><span class="line">    attr.<span class="built_in">set_post_ops</span>(ops);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">auto</span> conv2d_prim_desc = dnnl::convolution_forward::<span class="built_in">primitive_desc</span>(</span><br><span class="line">    conv_desc, attr, engine_);</span><br><span class="line">  <span class="comment">// ... skip ...</span></span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中除了单个<code>conv2d</code>，还可以映射图模式<code>conv2d+relu</code>为<code>DNNConv2d(false, true)</code>，或者映射<code>conv2d+add+relu</code>为<code>DNNLConv2d(true, true)</code>。</p>
+<p>我们可以通过代码实现映射：</p>
+<p>首先是利用不同名字实现了两个pattern从而我们可以很简单的在代码生成中识别它们。注意这些pattern都是通过Relay pattern语言实现的，需要学习使用写自己的patterns参考<a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/langref/relay_pattern.html">这篇</a>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">make_pattern</span>(<span class="params">with_bias=<span class="literal">True</span></span>):</span><br><span class="line">    data = wildcard()</span><br><span class="line">    weight = wildcard()</span><br><span class="line">    bias = wildcard()</span><br><span class="line">    conv = is_op(<span class="string">&#x27;nn.conv2d&#x27;</span>)(data, weight)</span><br><span class="line">    <span class="keyword">if</span> with_bias:</span><br><span class="line">    	conv_out = is_op(add)(conv, bias)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        conv_out = conv</span><br><span class="line">    <span class="keyword">return</span> is_op(<span class="string">&#x27;nn.relu&#x27;</span>)(conv_out)</span><br><span class="line"></span><br><span class="line"><span class="meta">@register_pattern_table(<span class="params"><span class="string">&quot;dnn1&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pattern_table</span>():</span><br><span class="line">    conv2d_bias_relu_pat = (<span class="string">&quot;dnnl.conv2d_bias_relu&quot;</span>, make_pattern(with_bias=<span class="literal">True</span>))</span><br><span class="line">    conv2d_relu_pat = (<span class="string">&quot;dnnl.conv2d_relu&quot;</span>, make_pattern(with_bias=<span class="literal">False</span>))</span><br><span class="line">    dnnl_patterns = [conv2d_bias_relu_pat, conv2d_relu_pat]</span><br><span class="line">    <span class="keyword">return</span> dnn1_patterns</span><br></pre></td></tr></table></figure>
+
+<p>通过pattern表，我们可以使用一个Relay Pass来执行翻译。该翻译可以将下面代码进行转换：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">%<span class="number">1</span> = nn.<span class="built_in">conv2d</span>(%data, %weight, ...)</span><br><span class="line">%<span class="number">2</span> = <span class="built_in">add</span>(%<span class="number">1</span>, %bias)</span><br><span class="line">%<span class="number">3</span> = nn.<span class="built_in">relu</span>(%<span class="number">2</span>)</span><br><span class="line">    ||</span><br><span class="line">    ||</span><br><span class="line">    ||</span><br><span class="line">    \/</span><br><span class="line">%<span class="number">1</span> = <span class="built_in">fn</span>(%input1, %input2, %input3,</span><br><span class="line">        Composite=<span class="string">&quot;dnnl.conv2d_bias_relu&quot;</span>,</span><br><span class="line">        PartitionedFromPattern=<span class="string">&quot;nn.conv2d_add_nn.relu_&quot;</span>) &#123;</span><br><span class="line">  %<span class="number">1</span> = nn.<span class="built_in">conv2d</span>(%input1, %input2, ...)</span><br><span class="line">  %<span class="number">2</span> = <span class="built_in">add</span>(%<span class="number">1</span>, %input3)</span><br><span class="line">  nn.<span class="built_in">relu</span>(%<span class="number">2</span>)</span><br><span class="line">&#125;</span><br><span class="line">%<span class="number">2</span> = %<span class="number">1</span>(%data, %weight, %bias)</span><br></pre></td></tr></table></figure>
+
+<p>从而DNNL代码生成器可以或者pattern名字<code>conv2d_bias_relu</code>并且将<code>%1</code>映射为<code>DNNConv2d(true, true)</code>。</p>
+<p><strong>PartitionedFromPattern属性</strong></p>
+<p>上面的<code>PartitionedFromPattern</code>属性适用于pattern包含通配符(wilcard)的情况。举例来说我们可能有一个pattern表<code>(&quot;conv2d_with_something&quot;, conv2d -&gt; *)</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">make_pattern</span>(<span class="params">with_bias=<span class="literal">True</span></span>):</span><br><span class="line">  data = wildcard()</span><br><span class="line">  weight = wildcard()</span><br><span class="line">  conv = is_op(<span class="string">&#x27;nn.conv2d&#x27;</span>)(data, weight)</span><br><span class="line">  <span class="keyword">return</span> wildcard()(conv)</span><br></pre></td></tr></table></figure>
+
+<p>这种情况下，你将获得一个带有<code>Composite=conv2d_with_something</code>属性的复合函数，但是你不知道它实际匹配的是什么计算图。这时候<code>PartitionedFromPattern</code>就有作用了，你可以通过查看<code>PartitionedFromPattern</code>来查看该函数是不是 <code>nn.conv2d_add_</code>或者<code>nn.conv2d_nn.relu_</code>，从而确定匹配的图形是否为<code>conv2d-&gt;add</code>或<code>conv2d-&gt;relu</code>。</p>
+<h4 id="Relay计算图转换"><a href="#Relay计算图转换" class="headerlink" title="Relay计算图转换"></a>Relay计算图转换</h4><p>上一步中我们定义了注解规则，这一步可以应用BYOC Relay的Pass从而将Relay计算图转换为划分过的计算图。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mod = create_relay_module_from_model() <span class="comment"># Output: The Original Relay Graph</span></span><br><span class="line">mod = transform.MergeComposite(pattern_table)(mod)</span><br><span class="line">mod = transform.AnnotateTarget([<span class="string">&quot;dnnl&quot;</span>])(mod) <span class="comment"># Output: The Graph with Annotations</span></span><br><span class="line">mod = transform.MergeCompilerRegions()(mod) <span class="comment"># Output: The Graph after merging compiler regions</span></span><br><span class="line">mod = transform.PartitionGraph()(mod) <span class="comment"># Output: The Graph After Graph Partitioning</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="C代码生成"><a href="#C代码生成" class="headerlink" title="C代码生成"></a>C代码生成</h4><p>下面是对官方文档中TVM代码生成DNNL(C代码)的示例过程。</p>
+<p>该例子在TVM源码中也保存有，如果需要先确保DNNL在本地机器上可用，并且在TVM的配置文件<code>config.cmake</code>中加入<code>set(USE_DNNL_CODEGENC_SRC)</code>，表示启用该代码生成，并编译TVM。</p>
+<p>DNNL代码生成在<code>src/relay/backend/contrib/dnn1/codegen.cc</code>中实现，在目前的实现中采用了两种形式实现了DNNL Codegen，一种是生成DNNL相关C文件，另一种是生成JSON相关文件。在追踪代码时注意没有被<code>USE_JSON_RUNTIME</code>宏覆盖的部分即可。</p>
+<p>首先我们需要通过TVM注册功能的API注册我们的codegen，该代码示例如下。这个API使得TVM编译器发送带有<code>Compiler=&lt;your codegen&gt;</code>的Relay函数到<code>relay.ext.&lt;your codegen&gt;</code>，也就是将带有属性的Relay函数发送给自定义的codegen。<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L510">代码链接</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">TVM_REGISTER_GLOBAL</span>(<span class="string">&quot;relay.ext.dnnl&quot;</span>).<span class="built_in">set_body_typed</span>(DNNLCompiler);</span><br></pre></td></tr></table></figure>
+
+<p>然后我们实现DNNL编译器的入口函数：<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L490">代码链接</a>（忽略了JSON的实现），注意每个runtime模块只负责一个Relay函数，这意味着我们可以从单个<code>.so</code>文件中找到倒戈DNNLruntime模块。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">runtime::Module <span class="title">DNNLCompiler</span><span class="params">(<span class="type">const</span> ObjectRef&amp; ref)</span> </span>&#123;</span><br><span class="line">  DNNLModuleCodegen dnnl;</span><br><span class="line">  <span class="keyword">return</span> dnnl.<span class="built_in">CreateCSourceModule</span>(ref);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">TVM_REGISTER_GLOBAL</span>(<span class="string">&quot;relay.ext.dnnl&quot;</span>).<span class="built_in">set_body_typed</span>(DNNLCompiler);</span><br></pre></td></tr></table></figure>
+
+<p>接着我们派生一个<code>CsourceModuleCodegenBase</code>来实现上面的<code>DNNLModuleCodegen</code>(第一个代码块)。尽管<code>CsourceModuleCodegenBase</code>负责例如序列化等其他模块级别的过程，但是我们只需要在<code>CreateCSourceModule</code>实现DNNL代码生成。<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L362">代码链接</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DNNLModuleCodegen</span> : <span class="keyword">public</span> CSourceModuleCodegenBase &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">// Create a corresponding DNNL function for the given relay Function.</span></span><br><span class="line">  std::pair&lt;std::string, Array&lt;String&gt;&gt; <span class="built_in">GenDNNLFunc</span>(<span class="type">const</span> Function&amp; func) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*!</span></span><br><span class="line"><span class="comment">   * \brief The overridden function that will create a CSourceModule. In order</span></span><br><span class="line"><span class="comment">   * to compile the generated C source code, users need to specify the paths to</span></span><br><span class="line"><span class="comment">   * some libraries, including some TVM required and dnnl specific ones. To make</span></span><br><span class="line"><span class="comment">   * linking simpiler, the DNNL kernels are wrapped in a TVM compatible manner</span></span><br><span class="line"><span class="comment">   * and live under tvm/src/runtime/contrib/dnnl folder.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * \param ref An object ref that could be either a Relay function or module.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * \return The runtime module that contains C source code.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function">runtime::Module <span class="title">CreateCSourceModule</span><span class="params">(<span class="type">const</span> ObjectRef&amp; ref)</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Create headers</span></span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;cstdint&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;cstdlib&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;cstring&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;vector&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;tvm/runtime/c_runtime_api.h&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;tvm/runtime/container.h&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;tvm/runtime/packed_func.h&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;dlpack/dlpack.h&gt;\n&quot;</span>;</span><br><span class="line">    <span class="comment">// dnnl_kernel file is saved under src/runtime/contrib/dnnl so that we don&#x27;t</span></span><br><span class="line">    <span class="comment">// expose it to ordinary users. To make export_library use it, users need to</span></span><br><span class="line">    <span class="comment">// pass -I$&#123;PATH_TO_TVM&#125;/src/runtime/contrib</span></span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;#include &lt;dnnl/dnnl_kernel.h&gt;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;using namespace tvm::runtime;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;using namespace tvm::runtime::contrib;\n&quot;</span>;</span><br><span class="line">    code_stream_ &lt;&lt; <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">// &quot;ref&quot; should be the paritioned Relay function with kCompiler=dnnl.</span></span><br><span class="line">    <span class="built_in">CHECK</span>(ref-&gt;<span class="built_in">IsInstance</span>&lt;FunctionNode&gt;());</span><br><span class="line">    <span class="keyword">auto</span> res = <span class="built_in">GenDNNLFunc</span>(<span class="built_in">Downcast</span>&lt;Function&gt;(ref));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &quot;code&quot; is the generated C code with DNNL APIs.</span></span><br><span class="line">    std::string code = code_stream_.<span class="built_in">str</span>();</span><br><span class="line">    <span class="comment">// &quot;res&quot; is a tuple of constant weights (symbols, values).</span></span><br><span class="line">    <span class="comment">// All constant tensors will be serialzied along with the generated C code</span></span><br><span class="line">    <span class="comment">// when export_library is invoked.</span></span><br><span class="line">    String sym = std::<span class="built_in">get</span>&lt;<span class="number">0</span>&gt;(res);</span><br><span class="line">    Array&lt;String&gt; variables = std::<span class="built_in">get</span>&lt;<span class="number">1</span>&gt;(res);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create a CSource module</span></span><br><span class="line">    <span class="type">const</span> <span class="keyword">auto</span>* pf = runtime::Registry::<span class="built_in">Get</span>(<span class="string">&quot;runtime.CSourceModuleCreate&quot;</span>);</span><br><span class="line">    <span class="built_in">CHECK</span>(pf != <span class="literal">nullptr</span>) &lt;&lt; <span class="string">&quot;Cannot find csource module to create the external runtime module&quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> (*pf)(code, <span class="string">&quot;c&quot;</span>, sym, variables);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="comment">/*!</span></span><br><span class="line"><span class="comment">   * \brief The code stream that prints the code that will be compiled using</span></span><br><span class="line"><span class="comment">   * external codegen tools.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  std::ostringstream code_stream_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">else</span>  <span class="comment">// DNNL JSON runtime</span></span></span><br></pre></td></tr></table></figure>
+
+<p>接下来，我们需要实现上面代码中的39行的<code>GeeDNNLFunc</code>从而生成使用了DNNL API的C代码。需要生成的C++代码样例也在下面给出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DNNLModuleCodegen</span> : <span class="keyword">public</span> CSourceModuleCodegenBase &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">// Create a corresponding DNNL function for the given relay Function.</span></span><br><span class="line">  std::pair&lt;std::string, Array&lt;String&gt;&gt; <span class="built_in">GenDNNLFunc</span>(<span class="type">const</span> Function&amp; func) &#123;</span><br><span class="line">    <span class="built_in">CHECK</span>(func.<span class="built_in">defined</span>()) &lt;&lt; <span class="string">&quot;Input error: expect a Relay function.&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Record the external symbol for runtime lookup.</span></span><br><span class="line">    <span class="keyword">auto</span> sid = <span class="built_in">GetExtSymbol</span>(func);</span><br><span class="line"></span><br><span class="line">    <span class="function">CodegenDNNL <span class="title">builder</span><span class="params">(sid)</span></span>;</span><br><span class="line">    <span class="keyword">auto</span> out = builder.<span class="built_in">VisitExpr</span>(func-&gt;body);</span><br><span class="line">    code_stream_ &lt;&lt; builder.<span class="built_in">JIT</span>(out);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;sid, builder.const_vars_&#125;;</span><br><span class="line">&#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请注意，下面生成的结果是由Relay图:conv2d -&gt; add -&gt; relu得来。并且代码中用到了很多预先定义的基于算子的DNNL函数，它们被定义在<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/runtime/contrib/dnnl/dnnl.cc">src&#x2F;runtime&#x2F;contrib&#x2F;dnnl&#x2F;dnnl.cc</a>中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdint&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tvm/runtime/c_runtime_api.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tvm/runtime/container.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tvm/runtime/packed_func.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dlpack/dlpack.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dnnl/dnnl_kernel.h&gt;</span></span></span><br><span class="line">using namespace tvm::runtime;</span><br><span class="line">using namespace tvm::runtime::contrib;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Execute the conv2d-&gt;add-&gt;relu graph with DNNL.</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="type">void</span> <span class="title function_">dnnl_0_</span><span class="params">(<span class="type">float</span>* dnnl_0_i0, <span class="type">float</span>* dnnl_0_i1,</span></span><br><span class="line"><span class="params">                        <span class="type">float</span>* dnnl_0_i2, <span class="type">float</span>* out0)</span> &#123;</span><br><span class="line">  <span class="comment">// Allocate intermediate buffers.</span></span><br><span class="line">  <span class="type">float</span>* buf_0 = (<span class="type">float</span>*)<span class="built_in">std</span>::<span class="built_in">malloc</span>(<span class="number">4</span> * <span class="number">4608</span>);</span><br><span class="line">  <span class="type">float</span>* buf_1 = (<span class="type">float</span>*)<span class="built_in">std</span>::<span class="built_in">malloc</span>(<span class="number">4</span> * <span class="number">4608</span>);</span><br><span class="line">  <span class="type">float</span>* buf_2 = (<span class="type">float</span>*)<span class="built_in">std</span>::<span class="built_in">malloc</span>(<span class="number">4</span> * <span class="number">4608</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Pre-implemented op-based DNNL functions.</span></span><br><span class="line">  dnnl_conv2d(dnnl_0_i0, dnnl_0_i1, buf_0, <span class="number">1</span>, <span class="number">32</span>, <span class="number">14</span>, <span class="number">14</span>, <span class="number">32</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">  dnnl_add(buf_0, dnnl_0_i2, buf_1, <span class="number">1</span>, <span class="number">32</span>, <span class="number">12</span>, <span class="number">12</span>);</span><br><span class="line">  dnnl_relu(buf_1, buf_2, <span class="number">1</span>, <span class="number">32</span>, <span class="number">12</span>, <span class="number">12</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Copy the final output to the corresponding buffer.</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">memcpy</span>(out0, buf_2, <span class="number">4</span> * <span class="number">4608</span>);</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">free</span>(buf_0);</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">free</span>(buf_1);</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">free</span>(buf_2);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The wrapper function with all arguments in DLTensor type.</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="type">int</span> <span class="title function_">dnnl_0_wrapper_</span><span class="params">(DLTensor* arg0,</span></span><br><span class="line"><span class="params">        DLTensor* arg1,</span></span><br><span class="line"><span class="params">        DLTensor* arg2,</span></span><br><span class="line"><span class="params">        DLTensor* out0)</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Cast all DLTensor to primitive type buffers and invoke the above</span></span><br><span class="line">  <span class="comment">// execution function.</span></span><br><span class="line">  dnnl_0_(static_cast&lt;<span class="type">float</span>*&gt;(arg0-&gt;data),</span><br><span class="line">  static_cast&lt;<span class="type">float</span>*&gt;(arg1-&gt;data),</span><br><span class="line">  static_cast&lt;<span class="type">float</span>*&gt;(arg2-&gt;data),</span><br><span class="line">  static_cast&lt;<span class="type">float</span>*&gt;(out0-&gt;data));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The TVM macro to generate TVM runtime compatible function &quot;dnnl_0&quot;</span></span><br><span class="line"><span class="comment">// from our generated &quot;dnnl_0_wrapper_&quot;.</span></span><br><span class="line">TVM_DLL_EXPORT_TYPED_FUNC(dnnl_0, dnnl_0_wrapper_);</span><br></pre></td></tr></table></figure>
+
+<p>由于<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc"><code>src/relay/backend/contrib/dnnl/codegen.cc</code></a>中的其他实现太过于依赖DNNL，无法在官方教学文档中深入讨论，因此仅讨论这一个实现。</p>
+<p>主要思想是实现一个Relay图的访问器<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L138">L138</a>，从而访问给定的Relay函数，并且生成对应的C代码。只要我们自定义的代码生成器可以生成和TVM 运行时兼容的C代码，我们就可以完全自定义代码生成codegen来满足要求。</p>
+<h4 id="C源码编译"><a href="#C源码编译" class="headerlink" title="C源码编译"></a>C源码编译</h4><p>在上面实现的DNNLCompiler中实际上只是输出了一个能生成c代码的文本格式模块，它并没有被<code>gcc</code>编译为可执行二进制文件。实际上，产生的C代码将会由用户调用<code>export_libray(mod)</code>来编译，如下面示例代码所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">update_lib</span>(<span class="params">lib</span>):</span><br><span class="line">    <span class="comment"># Include the path of src/runtime/contrib/dnnl/dnnl.cc</span></span><br><span class="line">    test_dir = os.path.dirname(os.path.realpath(os.path.expanduser(__file__)))</span><br><span class="line">    source_dir = os.path.join(test_dir, <span class="string">&quot;..&quot;</span>, <span class="string">&quot;..&quot;</span>, <span class="string">&quot;..&quot;</span>)</span><br><span class="line">    contrib_path = os.path.join(source_dir, <span class="string">&quot;src&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;contrib&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Setup the gcc flag to compile DNNL code.</span></span><br><span class="line">    kwargs = &#123;&#125;</span><br><span class="line">    kwargs[<span class="string">&quot;options&quot;</span>] = [<span class="string">&quot;-O2&quot;</span>, <span class="string">&quot;-std=c++14&quot;</span>, <span class="string">&quot;-I&quot;</span> + contrib_path]</span><br><span class="line">    tmp_path = util.tempdir()</span><br><span class="line">    lib_name = <span class="string">&#x27;lib.so&#x27;</span></span><br><span class="line">    lib_path = tmp_path.relpath(lib_name)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># The generated C code with DNNL APIs is compiled to a binary lib.so.</span></span><br><span class="line">    lib.export_library(lib_path, fcompile=<span class="literal">False</span>, **kwargs)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Load the lib.so back to a runtime module.</span></span><br><span class="line">    lib = runtime.load_module(lib_path)</span><br><span class="line">    <span class="keyword">return</span> lib</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">    json, lib, param = relay.build(mod, target=target, params=params)</span><br><span class="line">lib = update_lib(lib)</span><br><span class="line">rt_mod = tvm.contrib.graph_runtime.create(json, lib, ctx)                    </span><br></pre></td></tr></table></figure>
+
+<h4 id="使用DNNL-Codegen-x2F-Runtime构建TVM"><a href="#使用DNNL-Codegen-x2F-Runtime构建TVM" class="headerlink" title="使用DNNL Codegen&#x2F;Runtime构建TVM"></a>使用DNNL Codegen&#x2F;Runtime构建TVM</h4><p>最后我们创建一个<a target="_blank" rel="noopener" href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/cmake/modules/contrib/DNNL.cmake">cmake&#x2F;modules&#x2F;contrib&#x2F;DNNL.cmake</a>从而让TVM构建时同时构建DNNL的代码生成模块。</p>
+<p>当这个cmake文件创建好后，用户可以直接在<code>build/config.cmake</code>中使用<code>set(USE_DNNL_CODEGEN ON)</code>来启动DNNL的代码生成器。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -783,13 +955,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">19k</span>
+    <span title="站点总字数">31k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">34 分钟</span>
+    <span title="站点阅读时长">57 分钟</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -846,16 +1018,7 @@
 
 
 
-
-  <script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.js"></script>
-  <script>
-      pbOptions = {};
-        pbOptions.iconStyle = "box";
-        pbOptions.boxForm = "horizontal";
-        pbOptions.position = "bottomCenter";
-        pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
-      new needShareButton('#needsharebutton-postbottom', pbOptions);
-  </script><script src="https://unpkg.com/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+<script src="https://unpkg.com/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
 
 <script>
 var options = {
@@ -876,5 +1039,14 @@ window.darkmode = darkmode;
 darkmode.showWidget();
 </script>
 
+  <script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.js"></script>
+  <script>
+      pbOptions = {};
+        pbOptions.iconStyle = "box";
+        pbOptions.boxForm = "horizontal";
+        pbOptions.position = "bottomCenter";
+        pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+  </script>
 </body>
 </html>
