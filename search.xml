@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>My New Post</title>
-    <url>/2023/04/11/My-New-Post/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title>CUDA编程模型</title>
     <url>/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/</url>
     <content><![CDATA[<h1 id="CUDA编程模型"><a href="#CUDA编程模型" class="headerlink" title="CUDA编程模型"></a>CUDA编程模型</h1><p>CUDA，Compute Unified Device Architecture，计算同一设备架构。</p>
@@ -117,6 +112,11 @@
         <tag>CUDA</tag>
         <tag>编程框架</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>My New Post</title>
+    <url>/2023/04/11/My-New-Post/</url>
+    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Hello World</title>
