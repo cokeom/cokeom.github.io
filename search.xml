@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hexo配置个人博客</title>
-    <url>/2023/04/12/Hexo%E9%85%8D%E7%BD%AE%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%97%AE%E9%A2%98/</url>
-    <content><![CDATA[<h1 id="Hexo配置个人博客"><a href="#Hexo配置个人博客" class="headerlink" title="Hexo配置个人博客"></a>Hexo配置个人博客</h1><p>本篇主要讲述配置过程中本人遇到的一些棘手问题。</p>
-<p><strong>问题1：Github代码仓文件名对英文大小写不敏感</strong></p>
-<p>我在根据网上的教程配置个人博客的<code>关于</code>页面时，发现无论我在本地怎么修改<code>about</code>文档或者配置文件，部署到Github上后打开总会出现404。而在本地检测(也就是<code>hexo s</code>)时却没有问题。</p>
-<p>后面我发现导致这个问题是因为我修改了<code>about</code>文档名，本来我刚创建<code>about</code>文档时用的是大写字母<code>A</code>，也就是<code>About</code>。并且当时已经把相关<code>public</code>文件夹下的代码提交到了Github。然后我将<code>About</code>改为<code>about</code>后，将相关的配置文件的导向也改为了文件夹<code>about</code>，但是由于<strong>Github代码仓中的代码名对英文大小写不敏感</strong>，以至于上游代码文件夹名字一直没修改(<code>About</code>)。因此出现找不到页面的问题。</p>
-<p>解决方案：先拷贝<code>about</code>文件夹。在本地将<code>about</code>文件夹删除，提交到上游。然后恢复<code>about</code>，再次提交即可。</p>
-]]></content>
-      <categories>
-        <category>个人博客的配置</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>CUDA编程模型</title>
     <url>/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/</url>
     <content><![CDATA[<h1 id="CUDA编程模型"><a href="#CUDA编程模型" class="headerlink" title="CUDA编程模型"></a>CUDA编程模型</h1><p>CUDA，Compute Unified Device Architecture，计算同一设备架构。</p>
@@ -146,5 +130,21 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Hexo配置个人博客</title>
+    <url>/2023/04/12/Hexo%E9%85%8D%E7%BD%AE%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<h1 id="Hexo配置个人博客"><a href="#Hexo配置个人博客" class="headerlink" title="Hexo配置个人博客"></a>Hexo配置个人博客</h1><p>本篇主要讲述配置过程中本人遇到的一些棘手问题。</p>
+<p><strong>问题1：Github代码仓文件名对英文大小写不敏感</strong></p>
+<p>我在根据网上的教程配置个人博客的<code>关于</code>页面时，发现无论我在本地怎么修改<code>about</code>文档或者配置文件，部署到Github上后打开总会出现404。而在本地检测(也就是<code>hexo s</code>)时却没有问题。</p>
+<p>后面我发现导致这个问题是因为我修改了<code>about</code>文档名，本来我刚创建<code>about</code>文档时用的是大写字母<code>A</code>，也就是<code>About</code>。并且当时已经把相关<code>public</code>文件夹下的代码提交到了Github。然后我将<code>About</code>改为<code>about</code>后，将相关的配置文件的导向也改为了文件夹<code>about</code>，但是由于<strong>Github代码仓中的代码名对英文大小写不敏感</strong>，以至于上游代码文件夹名字一直没修改(<code>About</code>)。因此出现找不到页面的问题。</p>
+<p>解决方案：先拷贝<code>about</code>文件夹。在本地将<code>about</code>文件夹删除，提交到上游。然后恢复<code>about</code>，再次提交即可。</p>
+]]></content>
+      <categories>
+        <category>个人博客的配置</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+      </tags>
   </entry>
 </search>
