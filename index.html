@@ -345,9 +345,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-04-12 19:45:18 / 修改时间：20:44:25" itemprop="dateCreated datePublished" datetime="2023-04-12T19:45:18+08:00">2023-04-12</time>
+      <time title="创建时间：2023-04-12 19:45:18" itemprop="dateCreated datePublished" datetime="2023-04-12T19:45:18+08:00">2023-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-04-14 10:21:01" itemprop="dateModified" datetime="2023-04-14T10:21:01+08:00">2023-04-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -384,84 +390,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>(待更新)</p>
-<h1 id="Clang文件架构"><a href="#Clang文件架构" class="headerlink" title="Clang文件架构"></a>Clang文件架构</h1><p>下面是clang源文件库库名，进行逐个分析从而理解clang源码架构(从文件分布方面)。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">docs</span><br><span class="line">include</span><br><span class="line">	clang</span><br><span class="line">		Analysis</span><br><span class="line">		APINotes</span><br><span class="line">		ARCMigrate</span><br><span class="line">		AST</span><br><span class="line">		ASTMatchers</span><br><span class="line">		Basic</span><br><span class="line">		CodeGen</span><br><span class="line">		CrossTU</span><br><span class="line">		DirectoryWatcher</span><br><span class="line">		Driver</span><br><span class="line">		Edit</span><br><span class="line">		ExtractAPI</span><br><span class="line">		Format</span><br><span class="line">		Frontend</span><br><span class="line">		FrontendTool</span><br><span class="line">		Index</span><br><span class="line">		IndexSerialization</span><br><span class="line">		Interpreter</span><br><span class="line">		Lex</span><br><span class="line">		Parse</span><br><span class="line">		Rewrite</span><br><span class="line">		Sema</span><br><span class="line">		Serialization</span><br><span class="line">		StaticAnalyzer</span><br><span class="line">		Support</span><br><span class="line">		Testing</span><br><span class="line">		Tooling</span><br><span class="line">	clang-c</span><br><span class="line">lib</span><br><span class="line">	多一个Headers</span><br></pre></td></tr></table></figure>
-
-<p>功能参考“Clang” CFE Internals Manual(Clang C Front-End内部手册)。</p>
-<h2 id="Basic文件夹"><a href="#Basic文件夹" class="headerlink" title="Basic文件夹"></a>Basic文件夹</h2><p>这个库无疑需要一个更好的文件名。这个”基本”库包含了许多低级(low-level)的应用程序，用于追踪和操纵 源缓冲区、源缓冲区的位置、”诊断”系统、记号、目标抽象(提取)、以及正在编译的语言的子集信息。</p>
-<p>该基础架构的一部分是特定于C(TargetInfo类)，其他部分可以用于非C的语言(SourceLocation，SourceManager、Diagnostics，FileManager)。以后如果有需求可以从Basic中将其分离出来构建新库。</p>
-<h2 id="Driver文件夹"><a href="#Driver文件夹" class="headerlink" title="Driver文件夹"></a>Driver文件夹</h2><p>Clang 驱动程序通过命令行交互为Clang编译器和工具提供了访问通道，并且兼容gcc的驱动程序。尽管驱动程序被Clang项目所驱动，但实际它从逻辑上来看是一个独立的工具，与Clang有着共同的目标。下面是它的特征：</p>
-<ul>
-<li>GCC兼容性：<br>也就是clang driver的操作和gcc driver的操作具有兼容性，用户在使用过程中可以很好的从gcc转向clang。</li>
-<li>灵活性(Flexible)：<br>clang驱动程序被设计成灵活的以及易适应的，这样可以很好顺应Clang和LLVM的发展。并且，大多数驱动程序函数被保存在库中，这样可以通过修改该库来构建其他想要实现工具或者接收类似GCC的接口的工具。</li>
-<li>低开销：<br>在实际过程中，我们发现gcc driver编译许多小文件时产生了一笔小但是有意义的开销。但是在clang driver和编译过程相比并不需要做太多事，我们在保持效率的同时还遵循一些简单的法则：<ol>
-<li>尽可能避免内存分配和字符串拷贝</li>
-<li>参数只进行一次解析</li>
-<li>提供了一些简单接口用来有效的寻找参数</li>
-</ol>
-</li>
-<li>简单：<br>最后，考虑到其他用途，驱动程序需要尽可能设计地简单一点。值得注意的是，尝试去完全兼容gcc driver会增加大量的复杂性，这与简单的设计里面不符。我们试图通过将一个任务分解为多个阶段，而不是单个整体的任务来减轻driver设计的复杂性。</li>
-</ul>
-<p><strong>内部介绍</strong></p>
-<img src="/2023/04/12/clang%E6%9E%B6%E6%9E%84/image-20230316175536024.png" alt="image-20230316175536024" style="zoom: 67%;">
-
-<p>上图是Driver结构下重要的组件以及组件之间的联系。其中黄色框代表着driver构建的具体的数据结构；绿色框是操纵这些数据结构的不同阶段，可以理解为一个函数；而蓝色是重要的工具类。因此通过绿色框，可以将Driver架构细分为五个不同的阶段：</p>
-<ul>
-<li><p>Parse阶段(解析参数处理)：选项解析阶段<br>命令行字符串被解析为参数(Arg类的实例)。驱动程序会去接收每一个参数。每个参数对应一个抽象Option类的定义，该定义描述了通过其他的元数据，这些参数如何被解析。Arg实例时轻量级的，仅仅包含足够的信息给用户去确定选项类别以及它们的值(可能有多个)。<br>  例如命令行选项中”-lfoo”和”-l foo”，将会解析为两个Arg实例，分别为”JoinedArg”以及”SeprateArg”，但是这两个Arg实例都指向相同的Option。<br>  Option是延迟创建的(Lazily created)，在driver运行过程中需要才去创建它。这样可以避免了加载驱动程序时避免创建所有的类，而是创建需要的类。大多数驱动程序代码只需要通过选项唯一的ID(例如clang driver中options::OPT_I)来处理选项。<br>  Arg实例中实际上不存放参数的值，因为这样会导致创建不必要的字符串副本。取而代之的实现是Arg实例始终签到在ArgList这种数据结构中，该数据结构包含每个参数的参数字符串(向量)，每个Arg实例只需要一个索引即可从向量中找到字符串。<br>​	clang driver可以通过”-###”打印出Parse阶段的结果，如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">clang -<span class="comment">### -Xarch_i386 -fomit-frame-pointer -Wa,-fast -Ifoo -I foo t.c</span></span></span><br><span class="line"></span><br><span class="line">Option 0 - Name: &quot;-Xarch_&quot;, Values: &#123;&quot;i386&quot;, &quot;-fomit-frame-pointer&quot;&#125;</span><br><span class="line">Option 1 - Name: &quot;-Wa,&quot;, Values: &#123;&quot;-fast&quot;&#125;</span><br><span class="line">Option 2 - Name: &quot;-I&quot;, Values: &#123;&quot;foo&quot;&#125;</span><br><span class="line">Option 3 - Name: &quot;-I&quot;, Values: &#123;&quot;foo&quot;&#125;</span><br><span class="line">Option 4 - Name: &quot;&lt;input&gt;&quot;, Values: &#123;&quot;t.c&quot;&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	在这个阶段后，命令行被分成了定义好的option对象，并且有适当的参数(也就是获取到了有用的选项数据)。随后阶段将基本不会在对字符串进行处理。</p>
-</li>
-<li><p>Pipeline阶段(流水线处理)：编译行为(Actions)的构建</p>
-<p>​	一旦参数被解析后，就需要构建编译序列(Compilation Sequence)所需的子流程工作的树结构。这个结构涉及到确定输入文件以及类型，以及要在这些文件上做的工作(预处理、编译、汇编、链接等)，并且构建一个Action实例的列表给每个任务。这个阶段的结果是有一个或者多个高层(Top-level)的actions，每个action通常对应于单个输出(例如，一个目标文件或者需要链接的文件)。<br>​	大多数Actions对应于实际的任务，但是有两个特殊的Actions，第一个是InputAction，只是简单用于改造输入参数，结果作为其他Actions的输入。第二个是BindArchAction，一个用于将某个 Action（动作）的目标架构绑定到特定架构的类，从概念上将被用到的所有输入Actions修改其架构。</p>
-<p>​	clang driver可以打印输出Pipeline阶段的结果，通过-ccc-print-phases，下面代码中driver构建了七个不同的actions，四个用于编译”t.c”文件为二进制文件，两个用于处理”t.s”输入(汇编器)，一个用于将它们链接起来</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$</span><span class="language-bash">clang -ccc-print-phases -x c t.c -x assembler t.s</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">0: input, <span class="string">&quot;t.c&quot;</span>, c</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1: preprocessor, &#123;0&#125;, cpp-output</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2: compiler, &#123;1&#125;, assembler</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">3: assembler, &#123;2&#125;, object</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">4: input, <span class="string">&quot;t.s&quot;</span>, assembler</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">5: assembler, &#123;4&#125;, object</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">6: linker, &#123;3, 5&#125;, image</span></span><br></pre></td></tr></table></figure>
-
-<p>​	下面再举一个不同的Pipeline阶段：在这个例子中有两个顶层(Top Level)Actions去编译输入文件为两个独立的目标文件，每个目标文件都是由lipo去构建的，用来合并为两个独立架构构建的结果。</p>
-<p>​	在这个阶段完成后，编译过程被划分为了一组简单的Actions，需要执行它们来产生中间(例如：-fsyntax-only选项，不会有最终输出)或者最终输出。这些阶段实际上就是所说的编译步骤，例如”预处理”、”编译”、”汇编”、”链接”等。这样也说明了”编译”过程的输入与输出，输入为预处理后的c&#x2F;c++文件，输出为汇编代码。</p>
-</li>
-<li><p>Bind阶段(连接阶段)：选择合适的工具(库)给Actions</p>
-<p>​	这个阶段(配合上下一个阶段)将Pipeline中的Actions工作树变成了一系列实际的子进程去跑。从概念上说，驱动程序driver执行自顶向下的匹配，从而将Actions分配给Tools(工具)。工具链(ToolChain)负责选择特定的工具来执行指定的操作。一旦选择后，驱动程序与工具进行交互，来查看它是否能用于处理Actions(例如clang、gcc中都集成了预处理器工具)。<br>​	一旦所有Actions都选择了工具，驱动程序会确定actions如何和工具进行”连接”(例如：使用进程内模块(inproccess module)，管道pipe，临时文件或者用户提供的文件名)。并且如果需要输出文件，驱动程序也需要去计算合适的文件名(后缀和文件位置取决于输入文件以及类似于-save-temps这样的选项)。</p>
-<p>​	驱动程序与工具链交互，从而执行工具绑定(Bind)。每个 ToolChain 中都包含了特定架构、平台和操作系统所需的全部工具和相关信息。在一次编译期间，单个驱动程序的调用可能查询多个工具链，从而用于不同体系结构工具交互。</p>
-<p>​	此阶段的结果并没有直接计算，但是driver可以通过-ccc-print-bindings选项打印这个阶段的结果，例如：下面代码展示了命令行这个编译序列对应的工具链、工具、输入、输出(每个Actions)。具体的，Clang在这里被用于在i386体系上编译t0.c，而Darwin工具用于汇编和链接过程。gcc工具对应于PowerPC相关Actions的处理过程。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$</span><span class="language-bash">clang -ccc-print-bindings -<span class="built_in">arch</span> i386 -<span class="built_in">arch</span> ppc t0.c</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;i386-apple-darwin9&quot;</span> - <span class="string">&quot;clang&quot;</span>, inputs: [<span class="string">&quot;t0.c&quot;</span>], output: <span class="string">&quot;/tmp/cc-Sn4RKF.s&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;i386-apple-darwin9&quot;</span> - <span class="string">&quot;darwin::Assemble&quot;</span>, inputs: [<span class="string">&quot;/tmp/cc-Sn4RKF.s&quot;</span>], output: <span class="string">&quot;/tmp/cc-gvSnbS.o&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;i386-apple-darwin9&quot;</span> - <span class="string">&quot;darwin::Link&quot;</span>, inputs: [<span class="string">&quot;/tmp/cc-gvSnbS.o&quot;</span>], output: <span class="string">&quot;/tmp/cc-jgHQxi.out&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;ppc-apple-darwin9&quot;</span> - <span class="string">&quot;gcc::Compile&quot;</span>, inputs: [<span class="string">&quot;t0.c&quot;</span>], output: <span class="string">&quot;/tmp/cc-Q0bTox.s&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;ppc-apple-darwin9&quot;</span> - <span class="string">&quot;gcc::Assemble&quot;</span>, inputs: [<span class="string">&quot;/tmp/cc-Q0bTox.s&quot;</span>], output: <span class="string">&quot;/tmp/cc-WCdicw.o&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;ppc-apple-darwin9&quot;</span> - <span class="string">&quot;gcc::Link&quot;</span>, inputs: [<span class="string">&quot;/tmp/cc-WCdicw.o&quot;</span>], output: <span class="string">&quot;/tmp/cc-HHBEBh.out&quot;</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;i386-apple-darwin9&quot;</span> - <span class="string">&quot;darwin::Lipo&quot;</span>, inputs: [<span class="string">&quot;/tmp/cc-jgHQxi.out&quot;</span>, <span class="string">&quot;/tmp/cc-HHBEBh.out&quot;</span>], output: <span class="string">&quot;a.out&quot;</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Translate阶段()：</p>
-<p>​	一旦选择了某个工具来执行特定的Action，该工具必须构建具体的命令(Commands)，用于编译期间被执行。翻译阶段的主要工作是将GCC样式的命令行选项翻译成子进程需要的选项。</p>
-<p>​	某些工具，例如汇编器，只和少量参数交互(对于汇编器来说，它只需要知道输入的汇编代码文件的路径和输出的机器码文件的路径，以及一些必要的选项参数)。不需要了解其他的上下文信息。其他的，比如编译器和链接器可能需要的参数更多一点。</p>
-<p>​	因此ArgList类提供了许多简单的方法来帮助翻译参数。例如，仅传递与某些选项相对应的最后一个参数，或者一个选项的所有参数。</p>
-<p>​	这个阶段的结果是要执行的命令的列表(可执行路径以及参数字符串)。</p>
-</li>
-<li><p>Execute阶段()：</p>
-<p>​	最后，编译流水线被执行。</p>
-</li>
-</ul>
-<h2 id="Frontend文件夹"><a href="#Frontend文件夹" class="headerlink" title="Frontend文件夹"></a>Frontend文件夹</h2><p>Frontend库包含了可用于Clang库顶层构建工具的一些功能。例如：输出诊断的多种方法。</p>
-<h3 id="Compiler-Invocation"><a href="#Compiler-Invocation" class="headerlink" title="Compiler Invocation"></a>Compiler Invocation</h3><p>编译器调用，这是Frontend库中提供的类之一，该类中包含描述Clang -cc1前端当前调用的信息。这个信息主要来自于Clang driver通过命令行构建，或者从客户端执行自定义初始化。这个数据结构被分成逻辑单元，给编译器不同部分使用，例如PreprocessorOptions，LanguageOptions，CodeGenOptions。</p>
-<p>CompilerInvocation是将用户指定的编译选项转化为Clang编译器内部状态，为CompilerInstance的初始化做好准备。</p>
-<p>下面是源码中相关实现：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CompilerInvocationBase</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">/// Options controlling the language variant.</span></span><br><span class="line">  std::shared_ptr&lt;LangOptions&gt; LangOpts;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// Options controlling the target.</span></span><br><span class="line">  std::shared_ptr&lt;TargetOptions&gt; TargetOpts;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// Options controlling the diagnostic engine.</span></span><br><span class="line">  IntrusiveRefCntPtr&lt;DiagnosticOptions&gt; DiagnosticOpts;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// Options controlling the \#include directive.</span></span><br><span class="line">  std::shared_ptr&lt;HeaderSearchOptions&gt; HeaderSearchOpts;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// Options controlling the preprocessor (aside from \#include handling).</span></span><br><span class="line">  std::shared_ptr&lt;PreprocessorOptions&gt; PreprocessorOpts;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">CompilerInvocationBase</span>();</span><br><span class="line">  <span class="built_in">CompilerInvocationBase</span>(<span class="type">const</span> CompilerInvocationBase &amp;X);</span><br><span class="line">  CompilerInvocationBase &amp;<span class="keyword">operator</span>=(<span class="type">const</span> CompilerInvocationBase &amp;) = <span class="keyword">delete</span>;</span><br><span class="line">  ~<span class="built_in">CompilerInvocationBase</span>();</span><br><span class="line"></span><br><span class="line">  <span class="function">LangOptions *<span class="title">getLangOpts</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> LangOpts.<span class="built_in">get</span>(); &#125;</span><br><span class="line">  <span class="function"><span class="type">const</span> LangOptions *<span class="title">getLangOpts</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> LangOpts.<span class="built_in">get</span>(); &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">TargetOptions &amp;<span class="title">getTargetOpts</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> *TargetOpts.<span class="built_in">get</span>(); &#125;</span><br><span class="line">  <span class="function"><span class="type">const</span> TargetOptions &amp;<span class="title">getTargetOpts</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> *TargetOpts.<span class="built_in">get</span>(); &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">DiagnosticOptions &amp;<span class="title">getDiagnosticOpts</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> *DiagnosticOpts; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">HeaderSearchOptions &amp;<span class="title">getHeaderSearchOpts</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> *HeaderSearchOpts; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="type">const</span> HeaderSearchOptions &amp;<span class="title">getHeaderSearchOpts</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> *HeaderSearchOpts;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">std::shared_ptr&lt;HeaderSearchOptions&gt; <span class="title">getHeaderSearchOptsPtr</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> HeaderSearchOpts;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">std::shared_ptr&lt;PreprocessorOptions&gt; <span class="title">getPreprocessorOptsPtr</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> PreprocessorOpts;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">PreprocessorOptions &amp;<span class="title">getPreprocessorOpts</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> *PreprocessorOpts; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="type">const</span> PreprocessorOptions &amp;<span class="title">getPreprocessorOpts</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> *PreprocessorOpts;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h3 id="CompilerInstance"><a href="#CompilerInstance" class="headerlink" title="CompilerInstance"></a>CompilerInstance</h3><p>是Clang编译器的实例化对象，它代表了一个完成的编译器实例，包含了所有的编译器组件和状态，负责管理整个编译流程。其中包括对输入源代码的解析、词法分析、语法分析、语义分析、代码生成等过程。在Clang中，CompilerInstance的创建和初始化由FrontendAction和CompilerInvocation完成，CompilerInstance的核心作用是将输入的源代码转化为目标代码，为后续的链接、调试、优化等工作做准备。</p>
-<h1 id="Clang中相关类"><a href="#Clang中相关类" class="headerlink" title="Clang中相关类"></a>Clang中相关类</h1><h2 id="Type类以及它的子类"><a href="#Type类以及它的子类" class="headerlink" title="Type类以及它的子类"></a>Type类以及它的子类</h2><p>Type类和它的子类是AST中重要的一部分。数据类型可以通过ASTContext类被访问到，ASTContext类会在程序需要使用的时候隐式地创建它们。</p>
-<p>Type类有着一系列不明显的特征：</p>
-<ol>
-<li>它们不会获取类型限定符，类似于const或者volatile(可参考QualType)</li>
-<li>它们隐式获取typedef的信息。一旦创建后，Type不可改变，这一点不像(Decls)</li>
-</ol>
-<h2 id="FrontendAction类"><a href="#FrontendAction类" class="headerlink" title="FrontendAction类"></a>FrontendAction类</h2><h3 id="ASTFrontendAction"><a href="#ASTFrontendAction" class="headerlink" title="ASTFrontendAction"></a>ASTFrontendAction</h3><h4 id="CodeGenAction"><a href="#CodeGenAction" class="headerlink" title="CodeGenAction"></a>CodeGenAction</h4><h3 id="ASTMergeAction"><a href="#ASTMergeAction" class="headerlink" title="ASTMergeAction"></a>ASTMergeAction</h3><h3 id="DumpCompilerOptionsAction"><a href="#DumpCompilerOptionsAction" class="headerlink" title="DumpCompilerOptionsAction"></a>DumpCompilerOptionsAction</h3><h3 id="InitOnlyAction"><a href="#InitOnlyAction" class="headerlink" title="InitOnlyAction"></a>InitOnlyAction</h3><h3 id="PreprocessorFrontendAction"><a href="#PreprocessorFrontendAction" class="headerlink" title="PreprocessorFrontendAction"></a>PreprocessorFrontendAction</h3><h3 id="PrintDependencyDirectivesSourceMinimizerAction"><a href="#PrintDependencyDirectivesSourceMinimizerAction" class="headerlink" title="PrintDependencyDirectivesSourceMinimizerAction"></a>PrintDependencyDirectivesSourceMinimizerAction</h3><h3 id="PrintPreambleAction"><a href="#PrintPreambleAction" class="headerlink" title="PrintPreambleAction"></a>PrintPreambleAction</h3><h3 id="ReadPCHAndPreprocessAction"><a href="#ReadPCHAndPreprocessAction" class="headerlink" title="ReadPCHAndPreprocessAction"></a>ReadPCHAndPreprocessAction</h3><h3 id="WrapperFrontendAction"><a href="#WrapperFrontendAction" class="headerlink" title="WrapperFrontendAction"></a>WrapperFrontendAction</h3><h1 id="Clang中经常混淆的点"><a href="#Clang中经常混淆的点" class="headerlink" title="Clang中经常混淆的点"></a>Clang中经常混淆的点</h1><p>可参考文章<a target="_blank" rel="noopener" href="https://www.hupeiwei.com/post/clang%E6%98%AF%E7%BC%96%E8%AF%91%E5%99%A8%E5%89%8D%E7%AB%AF%E5%90%97/">clang是编译器前端吗</a></p>
-<p><strong>Clang前端、clang cc1、clang driver、clang编译器、clang应用程序</strong></p>
-<p><strong>clang前端</strong>：这个说法相对于整个编译器，也就是clang+llvm编译器而言，clang的功能是<strong>接收源文件并且产生LLVM IR文件</strong>给LLVM使用，因此有了clang前端的说法。</p>
-<p><strong>clang编译器</strong>：这个说法是因为在实际使用的过程中，可以直接利用<strong>clang应用程序将类c文件生成为可执行文件</strong>，clang会自动调用llvm相关工具，因此也称<strong>clang应用程序为clang编译器</strong>。</p>
-<p><strong>clang应用程序</strong>：就是build&#x2F;bin目录下的<strong>clang程序</strong>，可以像gcc一样直接将源文件编译为可执行文件。</p>
-<p><strong>clang cc1</strong>：cc1为命令行参数，它可以表示真正的clang前端，也就是可以将编译器运行到前端某一步从而停止，精准调控前端。同时也可以通过”-emit-obj”选项去“隐式”调用llc(不体现在命令行中)，从而实现为clang编译器。(也有人说clang应用程序通过-cc1从而以编译器的身份执行编译任务)</p>
-<p><strong>clang driver</strong>：clang驱动程序（实际上就是clang应用程序），用来<strong>调用编译器运行过程中需要的工具</strong>，自己不会编译源码。在前端调用cc1来将源文件生成为llvmIR文件，在后端调用llc将LLVMIR文件生成目标文件。不仅如此，还通过调用系统的链接器链接目标文件成可执行文件。例如：.&#x2F;clang test.c -###</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">&quot;/home/linguoxiong/summer-ospp/improve-compiler/llvm_install/bin/clang-12&quot; &quot;-</span><br><span class="line">cc1&quot; &quot;-triple&quot; &quot;x86_64-unknown-linux-gnu&quot; &quot;-emit-obj&quot; &quot;-mrelax-all&quot; &quot;--mrelax-r</span><br><span class="line">elocations&quot; &quot;-disable-free&quot; &quot;-main-file-name&quot; &quot;test.c&quot; &quot;-mrelocation-model&quot; </span><br><span class="line">&quot;static&quot; &quot;-mframe-pointer=all&quot; &quot;-fmath-errno&quot; &quot;-fno-rounding-math&quot; &quot;-</span><br><span class="line">mconstructor-aliases&quot; &quot;-munwind-tables&quot; &quot;-target-cpu&quot; &quot;x86-64&quot; &quot;-tune-cpu&quot; </span><br><span class="line">&quot;generic&quot; &quot;-fno-split-dwarf-inlining&quot; &quot;-debugger-tuning=gdb&quot; &quot;-resource-dir&quot; </span><br><span class="line">&quot;/home/linguoxiong/summer-ospp/improve-compiler/llvm_install/lib/clang/12.0.1&quot; </span><br><span class="line">&quot;-I/opt/intel-tool/intel/oneapi/vpl/2022.0.0/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/tbb/2021.5.0/env/../include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/mpi/2021.5.0//include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/mkl/2022.0.1/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/ipp/2021.5.1/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/ippcp/2021.5.0/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/ipp/2021.5.1/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/dpl/2021.6.0/linux/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/dpcpp-ct/2022.0.0/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/dnnl/2022.0.1/cpu_dpcpp_gpu_dpcpp/lib&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/dev-utilities/2021.5.1/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/dal/2021.5.1/include&quot; &quot;-I/opt/intel-</span><br><span class="line">tool/intel/oneapi/ccl/2021.5.0/include/cpu_gpu_dpcpp&quot; &quot;-cxx-isystem&quot; </span><br><span class="line">&quot;/opt/intel-tool/intel/oneapi/clck/2021.5.0/include&quot; &quot;-internal-isystem&quot; </span><br><span class="line">&quot;/usr/local/include&quot; &quot;-internal-isystem&quot; &quot;/home/linguoxiong/summer-ospp/improve-</span><br><span class="line">compiler/llvm_install/lib/clang/12.0.1/include&quot; &quot;-internal-externc-isystem&quot; </span><br><span class="line">&quot;/usr/include/x86_64-linux-gnu&quot; &quot;-internal-externc-isystem&quot; &quot;/include&quot; &quot;-</span><br><span class="line">internal-externc-isystem&quot; &quot;/usr/include&quot; &quot;-fdebug-compilation-dir&quot;  </span><br><span class="line">&quot;/home/linguoxiong/summer-ospp/improve-compiler/llvm_install/bin&quot; &quot;-ferror-limit&quot; &quot;19&quot; &quot;-fgnuc-version=4.2.1&quot; &quot;-fcolor-diagnostics&quot; &quot;-faddrsig&quot; &quot;-o&quot; &quot;/tmp/test-453c5b.o&quot; &quot;-x&quot; &quot;c&quot; &quot;test.c&quot;</span><br><span class="line"></span><br><span class="line">&quot;/usr/bin/ld&quot; &quot;-z&quot; &quot;relro&quot; &quot;--hash-style=gnu&quot; &quot;--eh-frame-hdr&quot; &quot;-m&quot; &quot;elf_x86_64&quot; </span><br><span class="line">&quot;-dynamic-linker&quot; &quot;/lib64/ld-linux-x86-64.so.2&quot; &quot;-o&quot; &quot;a.out&quot; &quot;/usr/lib/gcc/x86_64-</span><br><span class="line">linux-gnu/10/../../../x86_64-linux-gnu/crt1.o&quot; &quot;/usr/lib/gcc/x86_64-linux-</span><br><span class="line">gnu/10/../../../x86_64-linux-gnu/crti.o&quot; &quot;/usr/lib/gcc/x86_64-linux-</span><br><span class="line">gnu/10/crtbegin.o&quot; &quot;-L/usr/lib/gcc/x86_64-linux-gnu/10&quot; &quot;-L/usr/lib/gcc/x86_64-</span><br><span class="line">linux-gnu/10/../../../x86_64-linux-gnu&quot; &quot;-L/usr/lib/gcc/x86_64-linux-</span><br><span class="line">gnu/10/../../../../lib64&quot; &quot;-L/lib/x86_64-linux-gnu&quot; &quot;-L/lib/../lib64&quot; &quot;-</span><br><span class="line">L/usr/lib/x86_64-linux-gnu&quot; &quot;-L/usr/lib/../lib64&quot; &quot;-L/usr/lib/x86_64-linux-</span><br><span class="line">gnu/../../lib64&quot; &quot;-L/usr/lib/gcc/x86_64-linux-gnu/10/../../..&quot; &quot;-</span><br><span class="line">L/home/linguoxiong/summer-ospp/improve-compiler/llvm_install/bin/../lib&quot; &quot;-</span><br><span class="line">L/lib&quot; &quot;-L/usr/lib&quot; &quot;-L/opt/intel-tool/intel/oneapi/vpl/2022.0.0/lib&quot; &quot;-</span><br><span class="line">L/opt/intel-tool/intel/oneapi/tbb/2021.5.0/env/../lib/intel64/gcc4.8&quot; &quot;-</span><br><span class="line">L/opt/intel-tool/intel/oneapi/mpi/2021.5.0//libfabric/lib&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/mpi/2021.5.0//lib/release&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/mpi/2021.5.0//lib&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/mkl/2022.0.1/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/ipp/2021.5.1/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/ippcp/2021.5.0/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/ipp/2021.5.1/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/dnnl/2022.0.1/cpu_dpcpp_gpu_dpcpp/lib&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/dal/2021.5.1/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/compiler/2022.0.1/linux/compiler/lib/intel64_lin&quot; &quot;-</span><br><span class="line">L/opt/intel-tool/intel/oneapi/compiler/2022.0.1/linux/lib&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/clck/2021.5.0/lib/intel64&quot; &quot;-L/opt/intel-</span><br><span class="line">tool/intel/oneapi/ccl/2021.5.0/lib/cpu_gpu_dpcpp&quot; &quot;/tmp/test-453c5b.o&quot; &quot;-lgcc&quot; </span><br><span class="line">&quot;--as-needed&quot; &quot;-lgcc_s&quot; &quot;--no-as-needed&quot; &quot;-lc&quot; &quot;-lgcc&quot; &quot;--as-needed&quot; &quot;-lgcc_s&quot; </span><br><span class="line">&quot;--no-as-needed&quot; &quot;/usr/lib/gcc/x86_64-linux-gnu/10/crtend.o&quot; </span><br><span class="line">&quot;/usr/lib/gcc/x86_64-linux-gnu/10/../../../x86_64-linux-gnu/crtn.o&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="LLVM中重要的APIs"><a href="#LLVM中重要的APIs" class="headerlink" title="LLVM中重要的APIs"></a>LLVM中重要的APIs</h1><h2 id="isa-lt-gt"><a href="#isa-lt-gt" class="headerlink" title="isa&lt;&gt;"></a>isa&lt;&gt;</h2><h2 id="cast-lt-gt"><a href="#cast-lt-gt" class="headerlink" title="cast&lt;&gt;"></a>cast&lt;&gt;</h2><h2 id="dyn-cast-lt-gt"><a href="#dyn-cast-lt-gt" class="headerlink" title="dyn_cast&lt;&gt;"></a>dyn_cast&lt;&gt;</h2><h2 id="Twine"><a href="#Twine" class="headerlink" title="Twine"></a>Twine</h2><h2 id="formatv"><a href="#formatv" class="headerlink" title="formatv"></a>formatv</h2>
+          <p>本文描述了源码层面的clang文件架构，不过有些地方不太完整，待更新。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/04/12/clang%E6%9E%B6%E6%9E%84/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -515,9 +452,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-04-12 17:04:18 / 修改时间：17:04:58" itemprop="dateCreated datePublished" datetime="2023-04-12T17:04:18+08:00">2023-04-12</time>
+      <time title="创建时间：2023-04-12 17:04:18" itemprop="dateCreated datePublished" datetime="2023-04-12T17:04:18+08:00">2023-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-04-14 10:19:11" itemprop="dateModified" datetime="2023-04-14T10:19:11+08:00">2023-04-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -554,12 +497,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="Hexo配置个人博客"><a href="#Hexo配置个人博客" class="headerlink" title="Hexo配置个人博客"></a>Hexo配置个人博客</h1><p>本篇主要讲述配置过程中本人遇到的一些棘手问题。</p>
-<p><strong>问题1：Github代码仓文件名对英文大小写不敏感</strong></p>
-<p>我在根据网上的教程配置个人博客的<code>关于</code>页面时，发现无论我在本地怎么修改<code>about</code>文档或者配置文件，部署到Github上后打开总会出现404。而在本地检测(也就是<code>hexo s</code>)时却没有问题。</p>
-<p>后面我发现导致这个问题是因为我修改了<code>about</code>文档名，本来我刚创建<code>about</code>文档时用的是大写字母<code>A</code>，也就是<code>About</code>。并且当时已经把相关<code>public</code>文件夹下的代码提交到了Github。然后我将<code>About</code>改为<code>about</code>后，将相关的配置文件的导向也改为了文件夹<code>about</code>，但是由于<strong>Github代码仓中的代码名对英文大小写不敏感</strong>，以至于上游代码文件夹名字一直没修改(<code>About</code>)。因此出现找不到页面的问题。</p>
-<p>解决方案：先拷贝<code>about</code>文件夹。在本地将<code>about</code>文件夹删除，提交到上游。然后恢复<code>about</code>，再次提交即可。</p>
-
+          <p>本文包含本人在使用Hexo遇到的一些麻烦。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/04/12/Hexo%E9%85%8D%E7%BD%AE%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -613,9 +559,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-04-12 11:50:18 / 修改时间：16:23:36" itemprop="dateCreated datePublished" datetime="2023-04-12T11:50:18+08:00">2023-04-12</time>
+      <time title="创建时间：2023-04-12 11:50:18" itemprop="dateCreated datePublished" datetime="2023-04-12T11:50:18+08:00">2023-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-04-14 10:20:22" itemprop="dateModified" datetime="2023-04-14T10:20:22+08:00">2023-04-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -652,108 +604,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="CUDA编程模型"><a href="#CUDA编程模型" class="headerlink" title="CUDA编程模型"></a>CUDA编程模型</h1><p>CUDA，Compute Unified Device Architecture，计算同一设备架构。</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230305164943632.png" alt="image-20230305164943632" style="zoom:50%;">
-
-<h2 id="编程模型"><a href="#编程模型" class="headerlink" title="编程模型"></a>编程模型</h2><p>编程模型指的是描述计算机程序中数据和算法之间交互的概念模型。通常包括程序的输入和输出、程序的组件以及它们之间的关系，以及程序的执行顺序和控制流程等方面。</p>
-<p>例如面向对象编程模型是基于对象、类和继承等概念的模型，用于描述现实中的问题，使得程序的设计更为模块化和可拓展。</p>
-<p>CUDA编程模型提供了一个计算机架构的抽象，作为应用程序和其可用硬件之间的桥梁。用于描述多个任务同时执行的计算机程序模型，在原有的并行编程模型的基础上，提供了以下两个特有功能：</p>
-<ol>
-<li>通过层次结构在GPU中组织线程</li>
-<li>通过层次结构在GPU中访问内存</li>
-</ol>
-<p>CUDA编程模型使用由C语言扩展生成的注释代码在异构计算系统中执行应用程序。</p>
-<p>在C语言并行编程中，需要使用pthreads或OpenMP技术来显式地管理线程。CUDA 提出了一个线程层次结构抽象的概念，以允许控制线程行为。这个抽象为并行编程提供了良好的可扩展性。</p>
-<h2 id="核函数"><a href="#核函数" class="headerlink" title="核函数"></a>核函数</h2><p>CUDA是异构程序框架，对于一份运行的本地代码文件而言，其代码中有一部分是运行在CPU上，一部分运行在GPU上，这样的编程逻辑叫Kernel编程。相对应的，代码中用于在GPU上运行的代码称为核函数(Kernel function)。</p>
-<p>核函数是在CUDA平台上执行的函数，由关键字”__global__”修饰，可以在设备上运行，也能从主机端调用。核函数一般通过线程块和线程索引进行调用和执行，并且可以在CUDA内核中使CUDA特定的之类和语法来利用GPU硬件资源。</p>
-<p>一个例子：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">__global__ <span class="type">void</span> <span class="title function_">vectorAdd</span><span class="params">(<span class="type">float</span> *a, <span class="type">float</span> *b, <span class="type">float</span> *c, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="type">int</span> i = blockIdx.x * blockDim.x + threadIdx.x; <span class="comment">// 利用线程块索引和线程索引进行设计算法</span></span><br><span class="line">    <span class="keyword">if</span> (i &lt; n) &#123;</span><br><span class="line">        c[i] = a[i] + b[i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 初始化数据</span></span><br><span class="line">    <span class="type">int</span> n = <span class="number">10000</span>;</span><br><span class="line">    <span class="type">float</span> *a, *b, *c;</span><br><span class="line">    cudaMallocManaged(&amp;a, n * <span class="keyword">sizeof</span>(<span class="type">float</span>));</span><br><span class="line">    cudaMallocManaged(&amp;b, n * <span class="keyword">sizeof</span>(<span class="type">float</span>));</span><br><span class="line">    cudaMallocManaged(&amp;c, n * <span class="keyword">sizeof</span>(<span class="type">float</span>));</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        a[i] = i;</span><br><span class="line">        b[i] = i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义线程块大小和数量</span></span><br><span class="line">    <span class="type">int</span> blockSize = <span class="number">256</span>;</span><br><span class="line">    <span class="type">int</span> numBlocks = (n + blockSize - <span class="number">1</span>) / blockSize;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用CUDA核函数</span></span><br><span class="line">    vectorAdd&lt;&lt;&lt;numBlocks, blockSize&gt;&gt;&gt;(a, b, c, n);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 等待CUDA核函数执行完成</span></span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 打印结果</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%f\n&quot;</span>, c[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放内存</span></span><br><span class="line">    cudaFree(a);</span><br><span class="line">    cudaFree(b);</span><br><span class="line">    cudaFree(c);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="NVIDIA-GPU硬件结构"><a href="#NVIDIA-GPU硬件结构" class="headerlink" title="NVIDIA GPU硬件结构"></a>NVIDIA GPU硬件结构</h2><p>GPU架构是围绕着一个叫做流式多处理器(SM，Streaming Multiprocessors)可拓展阵列构建而成。并且对于不同的GPU而言，其SM的结构可能不一样，下面是Fermi GPU架构下的SM组成：</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230307110304052.png" alt="image-20230307110304052" style="zoom:67%;">
-
-<p>SM通常有下面几个部分组成：</p>
-<ol>
-<li>CUDA核心，又称SP(Streaming Processor)。一个SP可以执行一个thread，但是并不是所有的thread都可以在同一时刻执行。</li>
-<li>共享内存&#x2F;L1 缓存</li>
-<li>寄存器文件</li>
-<li>加载存储单元</li>
-<li>特殊函数单元(Special Function Units)</li>
-<li>线程束调度器(Warp Scheduler)：</li>
-</ol>
-<p><strong>线程束：</strong>是SM中基本的执行单元。CUDA采用了SIMT架构来管理和执行线程，每32个线程为一组，称为线程束。线程束中的<strong>所有线程可以同时执行相同的指令</strong>，每个线程都有自己的<strong>地址计数器</strong>和<strong>寄存器状态</strong>。</p>
-<p>GPU中每一个SM都可以支持数百个线程并发执行，每个GPU通常有多个SM，所以一个GPU可能并发执行数千个线程。当启动一个内核网络时，它的线程块被分布到了可用的SM上来执行。线程块一旦被调度到一个SM上，其中的线程只会在那个指定的SM上并发执行(多个线程块可能被分配到同一个SM上)。每个SM将分配它的线程块分到包含32个线程的线程束中。所有线程执行相同的指令，每个线程在私有数据上进行操作。</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230307150221390.png" alt="image-20230307150221390" style="zoom:50%;">
-
-<p>下面是CUDA编程中软件与硬件对应关系：</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230307144733645.png" alt="image-20230307144733645" style="zoom:67%;">
-
-<p>SIMT模型包含3个SIMD不具备的特征：</p>
-<ol>
-<li>每个线程都有自己的指令地址计数器</li>
-<li>每个线程都有自己的寄存器状态</li>
-<li>每个线程可以有一个独立的执行路径</li>
-</ol>
-<p>尽管线程块中所有线程可以逻辑地并行运行，但是并不是所有线程都可以同时在物理层面执行。因此，线程块里不同线程可能会以不同速度前进。</p>
-<h2 id="内存层次结构"><a href="#内存层次结构" class="headerlink" title="内存层次结构"></a>内存层次结构</h2><p>CUDA内存模型提出了多种可编程内存的类型：</p>
-<ul>
-<li>寄存器</li>
-<li>共享内存 shared memory</li>
-<li>本地内存 Local memory</li>
-<li>常量内存 Constant memory</li>
-<li>纹理内存 Texture memory</li>
-<li>全局内存 Global memory</li>
-</ul>
-<p>下图为这些内存空间的层次结构，每种内存都有不同的作用域、生命周期和缓存。</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230307163117953.png" alt="image-20230307163117953" style="zoom:67%;">
-
-<p>一个核函数中的线程都有自己私有的本地内存(Local Memory)。</p>
-<p>一个线程块有自己的共享内存(Shared Memory)，该内存对同一进程块中所有线程都可见，其内容持续线程块的整个生命周期。</p>
-<p>所有线程都可以访问全局内存(Global Memory)。</p>
-<p>所有线程都能访问的只读内存有：常量内存(Constant Memory)和纹理内存空间(Texture Memory)。纹理内存为各种数据分布提供了不同的寻址模式和滤波模式。</p>
-<p>对于一个应用程序来说，全局内存、常量内存和纹理内存的内容具有相同的生命周期。</p>
-<h2 id="线程层次结构"><a href="#线程层次结构" class="headerlink" title="线程层次结构"></a>线程层次结构</h2><p>CUDA通过对线程进行层次划分从而管理线程，该层次结构由线程块网络与线程块组成。</p>
-<p><strong>线程</strong>：操作系统系统调度的最小单元。在CUDA编程模型下每个线程都有自己的一个块内的线程索引threadIdx，以及一个线程块索引blockIdx。线程索引可以描述为0~3维空间。例如threadldx为(x, y)时，表示线程在线程块中呈二维分布，可以用(x, y)来确定线程的具体(二维)位置。可以用threadIdx.x, threadIdx.y, threadIdx.z来指定三个维度的字段。</p>
-<p>通常用blockDim表示每个线程块中线程的数量，也就是最大容量。例如blockDim为(16, 16, 1)时表示每个线程块中包含了16*16个线程。</p>
-<p><strong>线程块</strong>：多个线程为一组，构成一个线程块。同一个线程块内部可以通过同步以及共享内存从而协作完成任务。描述线程块的变量为blockIdx，该变量可以描述为0~3维空间下的位置。例如blockIdx可以表示为(x, y, z)，表示线程块在线程块网络中的”三维位置”。可以用blockIdx.x, blockIdx.y, blockIdx.z来指定三个维度的字段。</p>
-<p>通常用gridDim表示一个线程块网络中启动的线程块的数量，例如(64，64，1)表示启动了64*64 &#x3D; 4096个线程块。</p>
-<p><strong>线程块网络</strong>：一个线程块网络由多个线程块组成，这些线程块共享相同的全局内存空间。不同块内部的线程不能协作。</p>
-<img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230306195537606.png" alt="image-20230306195537606" style="zoom:50%;">
-
-<p>对于一个给定数据大小的情况，我们需要确定网络和块尺寸，一般步骤为：</p>
-<ol>
-<li>确定线程块大小</li>
-<li>在已知数据大小和块大小的基础上计算网络维度</li>
-</ol>
-<p>在确定线程块大小时通常需要考虑：</p>
-<ol>
-<li>内核的性能特性</li>
-<li>GPU资源限制</li>
-</ol>
-<p>下面这段代码是构建一个2x1x1大小的数据块网格(grid)以及3x1x1大小的数据块(block)，6个处理元素对应6个线程。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cuda_runtime.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">__global__ <span class="type">void</span> <span class="title function_">checkIndex</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;threadIdx:(%d, %d, %d)   blockIdx:(%d, %d, %d)   blockDim:(%d, %d, %d)   gridDim:(%d, %d, %d)\n&quot;</span>,</span><br><span class="line">        threadIdx.x, threadIdx.y, threadIdx.z, blockIdx.x, blockIdx.y, blockIdx.z, blockDim.x, blockDim.y, blockDim.z,</span><br><span class="line">        gridDim.x, gridDim.y, gridDim.z);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> &#123;</span><br><span class="line">  <span class="type">int</span> nElem = <span class="number">6</span>;</span><br><span class="line">  dim3 <span class="title function_">block</span><span class="params">(<span class="number">3</span>)</span>;</span><br><span class="line">  dim3 <span class="title function_">grid</span><span class="params">((nElem + block.x - <span class="number">1</span>) / block.x)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;grid.x %d, grid.y %d, grid.z %d\n&quot;</span>, grid.x, grid.y, grid.z);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;block.x %d, block.y %d, block.z %d\n&quot;</span>, block.x, block.y, block.z);</span><br><span class="line"></span><br><span class="line">  checkIndex &lt;&lt;&lt;grid, block&gt;&gt;&gt; ();</span><br><span class="line"></span><br><span class="line">  cudaDeviceReset();</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>运行结果如下：</p>
-<p><img src="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/image-20230306203929017.png" alt="image-20230306203929017"></p>
-<p>该结果是由6个线程打印得出，分别打印其线程索引，线程块索引，线程块维度，线程块维度。</p>
-<h3 id="使用块和线程建立索引"><a href="#使用块和线程建立索引" class="headerlink" title="使用块和线程建立索引"></a>使用块和线程建立索引</h3><h3 id="例子：计算矩阵加法"><a href="#例子：计算矩阵加法" class="headerlink" title="例子：计算矩阵加法"></a>例子：计算矩阵加法</h3><h4 id="使用二维网络和二维线程块"><a href="#使用二维网络和二维线程块" class="headerlink" title="使用二维网络和二维线程块"></a>使用二维网络和二维线程块</h4><h4 id="使用一维网络和一维线程块"><a href="#使用一维网络和一维线程块" class="headerlink" title="使用一维网络和一维线程块"></a>使用一维网络和一维线程块</h4><h4 id="使用二维网络和一维线程块"><a href="#使用二维网络和一维线程块" class="headerlink" title="使用二维网络和一维线程块"></a>使用二维网络和一维线程块</h4><hr>
-<p>CUDA编程模型结构</p>
-<ol>
-<li>分配GPU内存</li>
-<li>从CPU内存拷贝数据到GPU内存</li>
-<li>调用CUDA内核函数来完成程序指定运算</li>
-<li>将数据从GPU拷贝回CPU内存</li>
-<li>释放GPU内存空间</li>
-</ol>
-<p>CUDA编程模型</p>
-<p>编程结构</p>
-<p>在一个异构环境中包含多个CPU和GPU，每个GPU和CPU的内存都由一条PCI-Express总线分隔开。</p>
-<p>主机内存：CPU及其内存</p>
-<p>设备内存：GPU及其内存</p>
-<p>从CUDA 6.0开始，NVIDIA提出了统一寻址的编程模型的改进，它连接了主机内存和设备内存空间，可以使用单个指针访问CPU和GPU内存，无需彼此拷贝数据。</p>
-
+          <p>本文主要讲述了CUDA编程模型，具体了解核函数、硬件结构、两个层次结构(内存和线程)。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/04/12/CUDA%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -951,7 +810,16 @@
 
 
 
-<script src="https://unpkg.com/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+  <script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.js"></script>
+  <script>
+      pbOptions = {};
+        pbOptions.iconStyle = "box";
+        pbOptions.boxForm = "horizontal";
+        pbOptions.position = "bottomCenter";
+        pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+  </script><script src="https://unpkg.com/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
 
 <script>
 var options = {
@@ -972,14 +840,5 @@ window.darkmode = darkmode;
 darkmode.showWidget();
 </script>
 
-  <script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.js"></script>
-  <script>
-      pbOptions = {};
-        pbOptions.iconStyle = "box";
-        pbOptions.boxForm = "horizontal";
-        pbOptions.position = "bottomCenter";
-        pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
-      new needShareButton('#needsharebutton-postbottom', pbOptions);
-  </script>
 </body>
 </html>
