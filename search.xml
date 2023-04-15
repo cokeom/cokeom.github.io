@@ -323,4 +323,31 @@
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
   </entry>
+  <entry>
+    <title>链接</title>
+    <url>/2023/04/15/%E5%90%84%E7%A7%8D%E5%BA%93/</url>
+    <content><![CDATA[<h1 id="链接-器-Linking"><a href="#链接-器-Linking" class="headerlink" title="链接(器)Linking"></a>链接(器)Linking</h1><p>链接是将各种代码部分和数据部分收集起来并组合为单一文件的过程。</p>
+<h2 id="静态库、动态库、运行时库"><a href="#静态库、动态库、运行时库" class="headerlink" title="静态库、动态库、运行时库"></a>静态库、动态库、运行时库</h2><p>静态库通过静态链接器链接到程序中，如果程序中对静态库中函数进行重复调用，则静态库会拷贝多份，因此最终得到的程序空间大小在大多数情况下比动态库大，甚至大得多。</p>
+<p>动态库也成为共享库，通过动态链接器链接到程序中，在程序静态链接期间只链接了共享库的重定位和符号表信息。在最后程序运行时通过动态链接器将函数调用位置重定位。这样的好处是可以将库进行复用，并且解耦，有利于后面开发者对库进行版本控制。</p>
+<p>静态库和动态库各有其优缺点，静态库相对于动态库而言虽然大小可能大的多，但是程序运行速度会比动态库快。动态库的使用虽然能节省空间，</p>
+<h3 id="Windows下库形式"><a href="#Windows下库形式" class="headerlink" title="Windows下库形式"></a>Windows下库形式</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>一般以<code>*.lib</code>的方式命名</p>
+<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p>一般以<code>*.dll</code>的方式命名，<code>dll</code>的全称是Dynamic Link Library。</p>
+<p>在windows下的动态库通常配合引入库使用，一般名为<code>*.lib</code>，不过此时存放的只是函数声明相关信息。</p>
+<h3 id="Linux下库形式"><a href="#Linux下库形式" class="headerlink" title="Linux下库形式"></a>Linux下库形式</h3><h4 id="静态库-1"><a href="#静态库-1" class="headerlink" title="静态库"></a>静态库</h4><p>一般以<code>lib*.a</code>方式命名，<code>a</code>表示的是archive，意为归档。</p>
+<h4 id="动态库-1"><a href="#动态库-1" class="headerlink" title="动态库"></a>动态库</h4><p>一般以<code>lib*.so</code>方式命名，<code>so</code>表示的是shared object，共享目标文件。</p>
+<h3 id="运行时库"><a href="#运行时库" class="headerlink" title="运行时库"></a>运行时库</h3><p>首先了解编译时(compile time)、加载时(load time)、运行时(runtime&#x2F;run-time&#x2F;run time)。</p>
+<p>编译时是指源代码编写，编译，汇编这几个过程，从源代码到机器代码的过程。</p>
+<p>加载时是指程序被**加载器(loader)**加载到内存的过程。</p>
+<p>运行时是内存上的程序执行的过程。</p>
+<p>运行时库的侧重点在于目前使用的函数库的使用时间。并且在侧重点上更偏向于是<strong>编译器</strong>或者<strong>操作系统</strong>提供的库文件。总体而言也就是操作系统或者编译器在程序运行过程中提供给程序的函数库。</p>
+<p>常见的运行时库有C++ standard library(libc、glibc)、glib等等。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><em>Computer Systems : A Programmer’s Perspective, 2E : Linking</em></p>
+]]></content>
+      <categories>
+        <category>计算机系统</category>
+      </categories>
+      <tags>
+        <tag>编译器</tag>
+      </tags>
+  </entry>
 </search>
